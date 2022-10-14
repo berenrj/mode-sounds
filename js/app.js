@@ -265,22 +265,22 @@ const app = Vue.createApp({
                 // create audio elements for triads or extendeds
                 if (files.length === 3) {
                     // triad chord
-                    var audioElement1 = new Audio('../sounds/'+files[0]+'.mp3');
-                    var audioElement2 = new Audio('../sounds/'+files[1]+'.mp3');
-                    var audioElement3 = new Audio('../sounds/'+files[2]+'.mp3');
+                    var audioElement1 = new Audio('/modeSounds/sounds/'+files[0]+'.mp3');
+                    var audioElement2 = new Audio('/modeSounds/sounds/'+files[1]+'.mp3');
+                    var audioElement3 = new Audio('/modeSounds/sounds/'+files[2]+'.mp3');
                     var triadAudioElements = [audioElement1,audioElement2,audioElement3]
                     return triadAudioElements;
                 } else if (files.length === 4) {
                     // extended chord
-                    var audioElement1 = new Audio('../sounds/'+files[0]+'.mp3');
-                    var audioElement2 = new Audio('../sounds/'+files[1]+'.mp3');
-                    var audioElement3 = new Audio('../sounds/'+files[2]+'.mp3');
-                    var audioElement4 = new Audio('../sounds/'+files[3]+'.mp3');
+                    var audioElement1 = new Audio('/modeSounds/sounds/'+files[0]+'.mp3');
+                    var audioElement2 = new Audio('/modeSounds/sounds/'+files[1]+'.mp3');
+                    var audioElement3 = new Audio('/modeSounds/sounds/'+files[2]+'.mp3');
+                    var audioElement4 = new Audio('/modeSounds/sounds/'+files[3]+'.mp3');
                     var extAudioElements = [audioElement1,audioElement2,audioElement3,audioElement4];
                     return extAudioElements;
                 }
             } else {
-                var audioElement = new Audio('../sounds/'+files+'.mp3');
+                var audioElement = new Audio('/modeSounds/sounds/'+files+'.mp3');
                 return audioElement;
             }
         }
