@@ -1,0 +1,53 @@
+// custom variables
+
+// secondary theme
+$secondary: rgb(105, 105, 105);
+
+// table headings font size
+$h6-font-size: calc(.3rem + .5vw + .5vh);//.85rem;
+
+// table padding
+$table-cell-padding-y: .2rem;
+// $table-cell-padding-y-sm;
+$table-cell-padding-x: .1rem;
+// $table-cell-padding-x-sm: .1rem;
+
+// button colour
+$green: #00ac4b;
+
+// button padding
+$btn-padding-y: .5rem; 
+$btn-padding-x: .4rem; 
+$btn-padding-y-lg: .3rem;
+$btn-padding-x-lg: .6rem;
+
+// accordion styling
+$accordion-bg: rgb(135, 135, 135);
+$accordion-button-color: rgb(255, 255, 255);
+$accordion-button-bg: rgb(95, 95, 95);
+$accordion-button-active-bg: rgb(95, 95, 95);
+$accordion-button-active-color: rgb(255, 255, 255);
+$accordion-border-color: rgb(255, 255, 255);
+$accordion-button-focus-border-color: rgb(95, 95, 95);
+$accordion-button-focus-box-shadow: rgb(95, 95, 95);
+
+// accordion padding and body padding
+$accordion-body-padding-y: .35rem;
+$accordion-body-padding-x: .25rem;
+$accordion-padding-y: .85rem;
+// $accordion-padding-x: .5rem;
+
+// import the functions & variables
+@import "../node_modules//bootstrap/scss/_functions";
+@import "../node_modules//bootstrap/scss/_variables";
+
+// themes
+$custom-theme-colors: (
+    "altdark": rgb(48, 48, 48),
+    "altlight": rgb(255, 236, 202)
+);
+
+$theme-colors: map-merge($custom-theme-colors, $theme-colors);
+
+// import all of the existing bootstrap scss files
+@import '../node_modules/bootstrap/scss/bootstrap';
