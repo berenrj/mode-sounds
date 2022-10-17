@@ -216,74 +216,140 @@ const app = Vue.createApp({
             // log mode objects
             // this.logModesInfo();
         },
-        playSound(notes) {
-            if (notes) {
-                if (Array.isArray(notes)) {
-                    // console.log("playSound, notes is array, "+notes);
-                    if (notes.length == 3) {
-                        // create required audio elements and play the triad notes
-                        var triadAudio = this.createAudioElements(notes);
-                        triadAudio[0].addEventListener("canplaythrough", (event) => {
-                            triadAudio[0].play();
-                        });
-                        triadAudio[1].addEventListener("canplaythrough", (event) => {
-                            triadAudio[1].play();
-                        });
-                        triadAudio[2].addEventListener("canplaythrough", (event) => {
-                            triadAudio[2].play();
-                        });
-                        // console.log('playSound, notes fileNames, '+fileNames);
-                    } else if (notes.length == 4) {
-                        // create required audio elements and play the extended notes
-                        var extAudio = this.createAudioElements(notes);
-                        extAudio[0].addEventListener("canplaythrough", (event) => {
-                            extAudio[0].play();
-                        });
-                        extAudio[1].addEventListener("canplaythrough", (event) => {
-                            extAudio[1].play();
-                        });
-                        extAudio[2].addEventListener("canplaythrough", (event) => {
-                            extAudio[2].play();
-                        });
-                        extAudio[3].addEventListener("canplaythrough", (event) => {
-                            extAudio[3].play();
-                        });
-                        // console.log('playSound, notes fileNames, '+fileNames);
-                    }
-                } else {
-                    // create required audio element and play the single note
-                    var noteAudio = this.createAudioElements(notes);
-                    noteAudio.addEventListener("canplaythrough", (event) => {
-                        noteAudio.play();
-                        // console.log("playSound, single note fileName, "+fileName);
-                    });
-                }
-            }   
-        },
-        createAudioElements(files) {
-            if (Array.isArray(files)) {
-                // create audio elements for triads or extendeds
-                if (files.length === 3) {
-                    // triad chord
-                    var audioElement1 = new Audio('/modeSounds/sounds/'+files[0]+'.mp3');
-                    var audioElement2 = new Audio('/modeSounds/sounds/'+files[1]+'.mp3');
-                    var audioElement3 = new Audio('/modeSounds/sounds/'+files[2]+'.mp3');
-                    var triadAudioElements = [audioElement1,audioElement2,audioElement3]
-                    return triadAudioElements;
-                } else if (files.length === 4) {
-                    // extended chord
-                    var audioElement1 = new Audio('/modeSounds/sounds/'+files[0]+'.mp3');
-                    var audioElement2 = new Audio('/modeSounds/sounds/'+files[1]+'.mp3');
-                    var audioElement3 = new Audio('/modeSounds/sounds/'+files[2]+'.mp3');
-                    var audioElement4 = new Audio('/modeSounds/sounds/'+files[3]+'.mp3');
-                    var extAudioElements = [audioElement1,audioElement2,audioElement3,audioElement4];
-                    return extAudioElements;
+        play(f) {
+            var notesArr = [];
+            // set the source/s
+            if (Array.isArray(f)) {
+                if (f.length === 3) {
+                    // triad
+                    var src1 = '/modeSounds/sounds/'+f[0]+'.mp3';
+                    var src2 = '/modeSounds/sounds/'+f[1]+'.mp3';
+                    var src3 = '/modeSounds/sounds/'+f[2]+'.mp3';
+                    notesArr = [src1,src2,src3];
+
+                } else if (f.length === 4) {
+                    // extended
+                    var src1 = '/modeSounds/sounds/'+f[0]+'.mp3';
+                    var src2 = '/modeSounds/sounds/'+f[1]+'.mp3';
+                    var src3 = '/modeSounds/sounds/'+f[2]+'.mp3';
+                    var src4 = '/modeSounds/sounds/'+f[3]+'.mp3';
+                    notesArr = [src1,src2,src3,src4];
+
                 }
             } else {
-                var audioElement = new Audio('/modeSounds/sounds/'+files+'.mp3');
-                return audioElement;
+                // single note
+                var src = '/modeSounds/sounds/'+f+'.mp3';
+                notesArr = [src];
             }
-        }
+
+            // define BufferLoader
+            function BufferLoader(context, urlList, callback) {
+                this.context = context;
+                this.urlList = urlList;
+                this.onload = callback;
+                this.bufferList = new Array();
+                this.loadCount = 0;
+            }
+            
+            BufferLoader.prototype.loadBuffer = function(url, index) {
+                // Load buffer asynchronously
+                var request = new XMLHttpRequest();
+                request.open("GET", url, true);
+                request.responseType = "arraybuffer";
+            
+                var loader = this;
+            
+                request.onload = function() {
+                // Asynchronously decode the audio file data in request.response
+                loader.context.decodeAudioData(
+                    request.response,
+                    function(buffer) {
+                    if (!buffer) {
+                        alert('error decoding file data: ' + url);
+                        return;
+                    }
+                    loader.bufferList[index] = buffer;
+                    if (++loader.loadCount == loader.urlList.length)
+                        loader.onload(loader.bufferList);
+                    },
+                    function(error) {
+                    console.error('decodeAudioData error', error);
+                    }
+                );
+                }
+            
+                request.onerror = function() {
+                alert('BufferLoader: XHR error');
+                }
+            
+                request.send();
+            }
+            
+            BufferLoader.prototype.load = function() {
+                for (var i = 0; i < this.urlList.length; ++i)
+                this.loadBuffer(this.urlList[i], i);
+            }
+
+            // create audio context and initialise buffers
+            var ctx;
+            var bufferLoader;
+
+            function init() {
+                ctx = new AudioContext();
+                bufferLoader = new BufferLoader(
+                    ctx,
+                    notesArr,
+                    finishedLoading
+                );
+                bufferLoader.load();
+            }
+            init();
+
+            function finishedLoading(bufferList) {
+                // create the number of sources required and play them at the same time
+                if (bufferList.length !== 0) {
+                    if (bufferList.length === 1) {
+                        // single note, create 1 source, set buffer, connect to context destination and play
+                        var s = ctx.createBufferSource();
+                        s.buffer = bufferList[0];
+                        s.connect(ctx.destination);
+                        s.start(0);
+                    } else if (bufferList.length === 3) {
+                        // triad, create 3 sources, set buffers, connect to context destination and play at same time
+                        var s1 = ctx.createBufferSource();
+                        var s2 = ctx.createBufferSource();
+                        var s3 = ctx.createBufferSource();
+                        s1.buffer = bufferList[0];
+                        s2.buffer = bufferList[1];
+                        s3.buffer = bufferList[2];
+                        s1.connect(ctx.destination);
+                        s2.connect(ctx.destination);
+                        s3.connect(ctx.destination);
+                        s1.start(0);
+                        s2.start(0);
+                        s3.start(0);
+                    } else if (bufferList.length === 4) {
+                        // extended, create 4 sources, set buffers, connect to context destination and play at same time
+                        var s1 = ctx.createBufferSource();
+                        var s2 = ctx.createBufferSource();
+                        var s3 = ctx.createBufferSource();
+                        var s4 = ctx.createBufferSource();
+                        s1.buffer = bufferList[0];
+                        s2.buffer = bufferList[1];
+                        s3.buffer = bufferList[2];
+                        s4.buffer = bufferList[3];
+                        s1.connect(ctx.destination);
+                        s2.connect(ctx.destination);
+                        s3.connect(ctx.destination);
+                        s4.connect(ctx.destination);
+                        s1.start(0);
+                        s2.start(0);
+                        s3.start(0);
+                        s4.start(0);
+                    }
+                }
+            }
+        },
         // logModesInfo() {
         //     console.log("logModesInfo, \n");
         //     for (var i=0; i<this.modes.length; i++) {
