@@ -1,4 +1,4 @@
-# modeSounds
+# mode-sounds
 
 I created this page as a tool for musicians, and anyone with an interest to "hear the sounds of the modes".
 
