@@ -222,23 +222,23 @@ const app = Vue.createApp({
             if (Array.isArray(f)) {
                 if (f.length === 3) {
                     // triad
-                    var src1 = '/modeSounds/sounds/'+f[0]+'.mp3';
-                    var src2 = '/modeSounds/sounds/'+f[1]+'.mp3';
-                    var src3 = '/modeSounds/sounds/'+f[2]+'.mp3';
+                    var src1 = './sounds/'+f[0]+'.mp3';
+                    var src2 = './sounds/'+f[1]+'.mp3';
+                    var src3 = './sounds/'+f[2]+'.mp3';
                     notesArr = [src1,src2,src3];
 
                 } else if (f.length === 4) {
                     // extended
-                    var src1 = '/modeSounds/sounds/'+f[0]+'.mp3';
-                    var src2 = '/modeSounds/sounds/'+f[1]+'.mp3';
-                    var src3 = '/modeSounds/sounds/'+f[2]+'.mp3';
-                    var src4 = '/modeSounds/sounds/'+f[3]+'.mp3';
+                    var src1 = './sounds/'+f[0]+'.mp3';
+                    var src2 = './sounds/'+f[1]+'.mp3';
+                    var src3 = './sounds/'+f[2]+'.mp3';
+                    var src4 = './sounds/'+f[3]+'.mp3';
                     notesArr = [src1,src2,src3,src4];
 
                 }
             } else {
                 // single note
-                var src = '/modeSounds/sounds/'+f+'.mp3';
+                var src = './sounds/'+f+'.mp3';
                 notesArr = [src];
             }
 
