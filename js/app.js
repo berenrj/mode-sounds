@@ -1,11 +1,31 @@
 const app = Vue.createApp({
     data() {
         return {
-            rootNote: '',
+            selectedInstrument: 'guitar', // default selection
+            rootNote: 'D', // selectedNote
+
+            defaultSelectedNote: {
+                guitar: 'D',
+                piano: 'A'
+            },
+
+            guitarDropdownOptions: ['D','D#','E','F','F#','G','G#','A','A#','B','C','C#'],
+            pianoDropdownOptions: ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#'],
+
             allNotes: ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#'],
-            fileNoteList: ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C','C#','D','D#','E','F','F#','G','G#'],
-            soundNames: ['0a','0a-','0b','0c','0c-','0d','0d-','0e','0f','0f-','0g','0g-','1a','1a-','1b','1c','1c-','1d','1d-','1e','1f','1f-','1g','1g-','2a','2a-','2b','2c','2c-','2d','2d-','2e','2f','2f-','2g','2g-'],
+
+            fileNoteList: {
+                guitar: ['D','D#','E','F','F#','G','G#','A','A#','B','C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C','C#'],
+                piano: ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C','C#','D','D#','E','F','F#','G','G#']
+            },
+
+            soundNames: {
+                guitar: ['0d','0d-','0e','0f','0f-','0g','0g-','1a','1a-','1b','1c','1c-','1d','1d-','1e','1f','1f-','1g','1g-','2a','2a-','2b','2c','2c-','2d','2d-','2e','2f','2f-','2g','2g-'],
+                piano: ['0a','0a-','0b','0c','0c-','0d','0d-','0e','0f','0f-','0g','0g-','1a','1a-','1b','1c','1c-','1d','1d-','1e','1f','1f-','1g','1g-','2a','2a-','2b','2c','2c-','2d','2d-','2e','2f','2f-','2g','2g-']
+            },
+
             sortedSoundNames: [],
+
             ints: {
                 major: [0,2,4,5,7,9,11], // 't','t','s','t','t','t'
                 minor: [0,2,3,5,7,8,10], // 't','s','t','t','s','t'
@@ -102,14 +122,34 @@ const app = Vue.createApp({
             ]
         }
     },
+    mounted() {
+        // Set initial default note value
+        this.selectedNote = this.defaultSelectedNote[this.selectedInstrument];
+        this.getRootNote();
+    },
+    computed: {
+        // Base dropdown notes on selected instrument
+        currentDropdownOptions() {
+            return this.selectedInstrument === 'guitar' ? this.guitarDropdownOptions : this.pianoDropdownOptions;
+        }
+    },
+    watch: {
+        selectedInstrument(newInstrument) {
+            // Reset the dropdown note selection when the selectedInstrument changes
+            this.rootNote = this.defaultSelectedNote[newInstrument];
+            this.getRootNote();
+        }
+    },
     methods: {
+        setDropdown(type) {
+            this.selectedInstrument = type;
+        },
+        getSelectedInstrument() {
+            // Either 'guitar' or 'piano', guitar is default
+            return this.selectedInstrument;
+        },
         getRootNote() {
-            var el = document.getElementById("inputGroupSelect01");
-            var val = el[el.selectedIndex].value;
-            this.rootNote = val;
-            // console.log("getRootNote, "+this.rootNote);
-            this.sortNotes(this.rootNote);
-            
+            this.sortNotes(this.rootNote); 
         },
         sortNotes(note) {
             var newArr = [...this.allNotes];
@@ -117,7 +157,7 @@ const app = Vue.createApp({
             for (var i=0; i<rootIndex; i++) {
                 newArr.push(newArr.shift());
             }
-            // console.log("sortNotes, "+newArr);
+            //console.log("sortNotes, "+newArr);
             this.setModeNotes(newArr);
         },
         setModeNotes(sorted) {
@@ -151,30 +191,58 @@ const app = Vue.createApp({
             // console.log("setModeNotes, dblHarMaj: "+this.modes[5].notes);
 
             // set the sortedSoundNames data property to allow note pitches to always ascend (for played notes)
-            var rootIndexInFileNoteList = this.fileNoteList.indexOf(this.rootNote);
-            var newSoundNames = [...this.soundNames];
+            var rootIndexInFileNoteList = this.fileNoteList[this.selectedInstrument].indexOf(this.rootNote);
+
+            var newSoundNames = [...this.soundNames[this.selectedInstrument]];
+
             // sort the fileNoteList beginning at this index
             for (var i=0; i<rootIndexInFileNoteList; i++) {
                 newSoundNames.push(newSoundNames.shift());
             };
 
+            //console.log(newSoundNames);
+
             var addedOn = [];
-            var rootNotA = false;
-            if (rootIndexInFileNoteList !== 0) {
-                rootNotA = true;
-                addedOn = newSoundNames.slice(-rootIndexInFileNoteList);
-                // modify the shifted prefixed 0 names to instead be prefixed with 3
-                for (var i=0;i<addedOn.length;i++) {
-                    addedOn[i] = addedOn[i].replace('0','3');
+            var addedOnGuitar = ["0a","0a-","0b","0c","0c-"];
+
+            // set the sorted sound names such that the root note is the lowest sound file
+            if (this.selectedInstrument === 'guitar') {
+                var rootNotD = false;
+                if (rootIndexInFileNoteList !== 0) {
+                    rootNotD = true;
+                    addedOnGuitar.push.apply(addedOnGuitar, newSoundNames.slice(-rootIndexInFileNoteList));
+                    //console.log("guitar addedOn",addedOnGuitar);
+                    // shift lower note prefixes, if 1a/1b/1c replace with 4, otherwise 0a/0b/0c replace with 3
+                    for (var i=0;i<addedOnGuitar.length;i++) {
+                        if (addedOnGuitar[i].indexOf("1a") >= 0 || addedOnGuitar[i].indexOf("1b") >= 0 || addedOnGuitar[i].indexOf("1c") >= 0) {
+                            addedOnGuitar[i] = addedOnGuitar[i].replace('1','4');
+                        } else {
+                            addedOnGuitar[i] = addedOnGuitar[i].replace('0','3');
+                        }
+                    }
                 }
-            };
-            if (rootNotA) {
-                newSoundNames = newSoundNames.slice(0,-rootIndexInFileNoteList).concat(addedOn);
-            };
+                if (rootNotD) {
+                    newSoundNames = newSoundNames.slice(0,-rootIndexInFileNoteList).concat(addedOnGuitar);
+                }
+            } else if (this.selectedInstrument === 'piano') {
+                var rootNotA = false;
+                if (rootIndexInFileNoteList !== 0) {
+                    rootNotA = true;
+                    addedOn = newSoundNames.slice(-rootIndexInFileNoteList);
+                    //console.log("piano addedOn",addedOn);
+                    // modify the shifted prefixed 0 names to instead be prefixed with 3
+                    for (var i=0;i<addedOn.length;i++) {
+                        addedOn[i] = addedOn[i].replace('0','3');
+                    }
+                }
+                if (rootNotA) {
+                    newSoundNames = newSoundNames.slice(0,-rootIndexInFileNoteList).concat(addedOn);
+                }
+            }
 
             this.sortedSoundNames = newSoundNames;
 
-            // console.log("sortedSoundNames, "+JSON.stringify(this.sortedSoundNames));
+            //console.log("sortedSoundNames, "+JSON.stringify(this.sortedSoundNames),this.sortedSoundNames.length);
 
             // for each mode, filter the sortedSoundNames and create new arrays for single notes, triads and extensions using the intervals for each mode
             for (mode in this.modes) {
@@ -187,16 +255,18 @@ const app = Vue.createApp({
             // define triad note indices (the index in notes array)
             // [[1,3,5],[2,4,6],[3,5,7],[4,6,1],[5,7,2],[6,1,3],[7,2,4]]
             var triadDegs = [[0,2,4],[1,3,5],[2,4,6],[3,5,0],[4,6,1],[5,0,2],[6,1,3]];
+
             // define triad note indices (the index in fileNoteList)
             var triadFileDegs = [[0,2,4],[1,3,5],[2,4,6],[3,5,7],[4,6,8],[5,7,9],[6,8,10]];
 
             // define extended note indices (the index in notes array)
             // [[1,3,5,7],[2,4,6,1],[3,5,7,2],[4,6,1,3],[5,7,2,4],[6,1,3,5],[7,2,4,6]]
             var extDegs = [[0,2,4,6],[1,3,5,0],[2,4,6,1],[3,5,0,2],[4,6,1,3],[5,0,2,4],[6,1,3,5]];
+
             // define extended note indices (the index in fileNoteList)
             var extFileDegs = [[0,2,4,6],[1,3,5,7],[2,4,6,8],[3,5,7,9],[4,6,8,10],[5,7,9,11],[6,8,10,12]];
             
-            // set tNoteFiles, eNoteFiles
+            // set tNoteFiles (triads), eNoteFiles (extended)
             for (mode in this.modes) {
                 for (var i=0;i<triadFileDegs.length;i++) {
                     for (var j=0;j<triadFileDegs[i].length;j++) {
@@ -222,25 +292,27 @@ const app = Vue.createApp({
             if (Array.isArray(f)) {
                 if (f.length === 3) {
                     // triad
-                    var src1 = './sounds/'+f[0]+'.mp3';
-                    var src2 = './sounds/'+f[1]+'.mp3';
-                    var src3 = './sounds/'+f[2]+'.mp3';
+                    var src1 = './sounds/'+this.getSelectedInstrument()+'/'+f[0]+'.mp3';
+                    var src2 = './sounds/'+this.getSelectedInstrument()+'/'+f[1]+'.mp3';
+                    var src3 = './sounds/'+this.getSelectedInstrument()+'/'+f[2]+'.mp3';
                     notesArr = [src1,src2,src3];
 
                 } else if (f.length === 4) {
                     // extended
-                    var src1 = './sounds/'+f[0]+'.mp3';
-                    var src2 = './sounds/'+f[1]+'.mp3';
-                    var src3 = './sounds/'+f[2]+'.mp3';
-                    var src4 = './sounds/'+f[3]+'.mp3';
+                    var src1 = './sounds/'+this.getSelectedInstrument()+'/'+f[0]+'.mp3';
+                    var src2 = './sounds/'+this.getSelectedInstrument()+'/'+f[1]+'.mp3';
+                    var src3 = './sounds/'+this.getSelectedInstrument()+'/'+f[2]+'.mp3';
+                    var src4 = './sounds/'+this.getSelectedInstrument()+'/'+f[3]+'.mp3';
                     notesArr = [src1,src2,src3,src4];
 
                 }
             } else {
                 // single note
-                var src = './sounds/'+f+'.mp3';
+                var src = './sounds/'+this.getSelectedInstrument()+'/'+f+'.mp3';
                 notesArr = [src];
             }
+            
+            //console.log("playing note/s:",JSON.stringify(notesArr));
 
             // define BufferLoader
             function BufferLoader(context, urlList, callback) {
@@ -356,13 +428,8 @@ const app = Vue.createApp({
         //         console.log(JSON.stringify(this.modes[i]));
         //     }  
         // }
-    },
-    mounted() {
-        this.getRootNote();
-    },
-    computed: {
-        // computed properties
-    },
+    }
+
     // can specify component template here if inclined
     // template: '<html>'
 });

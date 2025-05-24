@@ -29,7 +29,6 @@
                     <img src="./images/forte_icon_right.png" class="img-fluid my-auto" style="max-height: 35px;" alt="forte_icon_right">
                 </div>
             </div>
-
         </div>
         <!-- Wrapper -->
         <div style="flex: 1;">
@@ -37,27 +36,36 @@
             <!-- Vue Mode Utility -->
             <div id="modeUtility">
 
-                <!-- Root Note Selection-->
-                <div class="container-sm bg-altdark py-1 my-1 rounded justify-content-center">
-                        <div class="input-group justify-content-center">
+                <!-- Selection -->
+                <div class="container-sm bg-altdark py-1 my-1 rounded">
+                    <div class="input-group justify-content-evenly d-flex align-items-center">
+
+                        <!-- Instrument Selection -->
+                        <div class="bg-altdark rounded d-flex align-items-stretch">
+                            <!-- Guitar -->
+                            <div class="form-check form-check-inline m-1 p-0">
+                                <input class="btn-check" type="radio" name="instrumentSelect" id="guitarRadio1" value="guitar" v-model="selectedInstrument" checked />
+                                <label class="btn btn-outline-light px-2 d-flex d-inline-flex align-items-center" for="guitarRadio1">Guitar <p class="p-0 m-0" style="font-size: 25px;">&#127928;</p></label>
+                            </div>
+                            <!-- Piano -->
+                            <div class="form-check form-check-inline m-1 p-0">
+                                <input class="btn-check" type="radio" name="instrumentSelect" id="pianoRadio2" value="piano" v-model="selectedInstrument" />
+                                <label class="btn btn-outline-light px-2 d-flex d-inline-flex align-items-center" for="pianoRadio2">Piano <p class="p-0 m-0" style="font-size: 25px;">&#127929;</p></label>
+                            </div>
+                        </div>
+
+                        <!-- Root Note Selection -->
+                        <div class="d-flex align-items-stretch">
                             <div class="input-group-prepend">
                                 <label class="input-group-text" for="inputGroupSelect01">Pick A Root Note:</label>
                             </div>
-                            <select class="custom-select" id="inputGroupSelect01" @input="getRootNote">
-                                <option value="A" selected>A</option>
-                                <option value="A#">A#</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="C#">C#</option>
-                                <option value="D">D</option>
-                                <option value="D#">D#</option>
-                                <option value="E">E</option>
-                                <option value="F">F</option>
-                                <option value="F#">F#</option>
-                                <option value="G">G</option>
-                                <option value="G#">G#</option>
-                            </select>
+                                <!-- Note Dropdown (Guitar, D lowest, Piano, A lowest) -->
+                                <select class="custom-select" id="inputGroupSelect01" :key="selectedInstrument" v-model="rootNote" @change="getRootNote">
+                                    <option v-for="note in currentDropdownOptions" :key="note" :value="note">{{ note }}</option>
+                                </select>
                         </div>
+
+                    </div>
                 </div>
 
                 <!-- Mode Selection Accordion -->
